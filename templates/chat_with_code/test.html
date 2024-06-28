@@ -1,0 +1,100 @@
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=2.0">
+    {% tailwind_css %}
+    <title>Codepilot</title>
+    <link rel="icon" type="svg+xml" href="{% static 'chat_with_code/images/title.svg' %}">
+    <link rel="stylesheet" href="{% static 'chat_with_code/css/style.css' %}">
+    <script src="{% static 'chat_with_code/js/main.js' %}" defer></script>
+</head>
+<body class="scrollable bg-gray-900 text-white min-h-screen flex flex-col">
+    <div id="drawer" class="scrollable drawer bg-gray-900">
+        <form action="{% url 'getrepo' %}" method="post" class="scrollable form-get-repo flex flex-col gap-4 bg-gray-900 p-2 rounded-lg shadow-lg h-full" onsubmit="return validateForm() && showLoading()">
+            {% csrf_token %}
+            <h2 class="content-center text-white text-xl font-semibold">Import Repo</h2>
+            <label for="giturl" class="text-gray-300 font-semibold">Repo URL</label>
+            <input type="url" name="giturl" required class="p-2 bg-gray-900 border border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://github.com/my-org/my-repo">
+            
+            <label for="languages" class="text-gray-300 font-semibold">Select Languages</label>
+            <div class="scrollable grid grid-cols-2 sm:grid-cols-2 gap-6 p-1 border border-gray-600 rounded overflow-auto">
+                {% for language in languages %}
+                    <div class="scrollable flex items-center p-1 rounded hover:opacity-75 transition duration-200">
+                        <input type="checkbox" name="languages" value="{{language.value}}" class="mr-4 h-4 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                        <label class="text-gray-300">{{language.value}}</label>
+                    </div>
+                {% endfor %}
+            </div>
+            <input type="submit" value="Import" class="bg-green-800 text-white p-2 rounded cursor-pointer focus:ring-blue-50 hover:bg-green-800 transition duration-300 border border-gray-0 rounded">
+            
+        </form>
+    </div>
+
+    <div id="overlay" class="overlay" onclick="toggleDrawer()"></div>
+    <div class="scrollable flex-grow flex flex-row overflow-hidden">
+        <div id="right-pane" class="scrollable bg-gray-900 p-2 rounded-lg flex-grow sm:w-3/4 flex flex-col mt-4 sm:mt-0 resize overflow-auto">
+            <div class="scrollable flex-grow overflow-auto p-2 bg-gray-800 rounded-lg mb-4">
+                {% if question %}
+                    <div class="scrollable bg-gray-700 p-2 rounded-lg mb-2">
+                        <div class="text-gray-300">{{question}}</div>
+                    </div>
+                    <div id="answer-padding" class="scrollable relative my-4 p-2 bg-gray-800 rounded overflow-auto">
+                        {{answer|safe}}
+                    </div>
+                {% else %}
+                    {% if canchat %}
+                    <div class="bg-gray-700 p-2 rounded-lg mb-2">
+                        <div class="text-gray-300">
+                            Repository Imported Successfully!
+                        </div>
+                    </div>
+                    <div class="bg-gray-900 p-2 rounded-lg">
+                        <div class="text-white">
+                            Your repository has been successfully imported. You can now start asking questions about your code. 
+                            Simply type your question in the input box below and click on Up Arrow to get answers.                        
+                        </div>
+                    </div>
+                    {% else %}
+                        <div class="bg-gray-700 p-2 rounded-lg mb-2">
+                            <div class="text-gray-300">
+                                Welcome to the Codepilot
+                            </div>
+                        </div>
+                        <div class="bg-gray-900 p-2 rounded-lg">
+                            <div class="text-white">
+                                To get started, please click on <a class="text-blue-600 glow" href="javascript:void(0)" onclick="toggleDrawer()" id="drawer-button"><u>import</u></a> or the button at the bottom left corner to import your Git repository. 
+                                Once the repository is imported, you can ask questions about your code, and I'll provide the best possible answers.
+                            </div>
+                        </div>
+                    {%endif%}
+                {% endif %}
+                </div>                
+                <form action="{% url 'chat' %}" class="chat-container bg-gray-900 p-1 h-5 flex-grow" method="post" onsubmit="return showLoading();">
+                {% csrf_token %}
+                <div class="flex items-center">
+                    <button title="Import repo" type="button" onclick="toggleDrawer()" id="drawer-button" class="bg-green-800 text-white w-30 p-2 mr-2 py-2 h-50 rounded-r hover:bg-green-700 transition duration-300">
+                        <img src="{%static 'chat_with_code/images/import.svg'%}" alt="">
+                    </button>
+                    {% if canchat %}
+                        <textarea id="repoInput" type="text" class="scrollable flex-grow p-2 mr-2 h-50 bg-gray-900 border rounded focus:outline-none focus:ring-2 focus:ring-blue-100" placeholder="Message Codepilot" spellcheck="true" rows="1" name="question" required></textarea>
+                        <!-- <button id="chatButton" class="bg-green-800 text-white w-30 p-2 mr-2 py-2 h-50 rounded-r hover:bg-green-800 transition duration-300">Ask</button> -->
+                        <button id="chatButton" class="bg-green-800 text-white w-30 p-2 mr-2 py-2 h-50 rounded-r hover:bg-green-800 transition duration-300">
+                            <img src="{% static 'chat_with_code/images/arrow.svg' %}" alt="">
+                        </button> 
+                    {% else %}
+                        <textarea id="repoInput" type="text" class="scrollable flex-grow p-2 mr-2 h-50 bg-gray-900 border rounded focus:outline-none focus:ring-2 focus:ring-blue-100" placeholder="After specifying the repository and languages, you can type your message here." name="question" spellcheck="true" rows="1" required disabled></textarea>
+                        <button id="chatButton" class="bg-green-800 text-white w-30 p-2 mr-2 py-2 h-50 rounded-r hover:bg-green-800 transition duration-300" disabled>
+                            <img src="{% static 'chat_with_code/images/arrow.svg' %}" alt="">
+                        </button> 
+                    {% endif %}
+                    <div id="loader-container" class="loader-container">
+                        <div class="loader"></div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
