@@ -14,8 +14,8 @@ from .codebaseio.codebase_io import get_language_info,clone_repo, load_codebase_
 from .codebaseio.result_formator import format_response
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_google_genai import GoogleGenerativeAI
-from .models import CodeAnalysisRequest
 from asgiref.sync import sync_to_async
+from django.contrib.sessions.backends.db import SessionStore
 # Create your views here.
 
 dotenv.load_dotenv()
@@ -52,6 +52,7 @@ supported_languages = [
     Language.LUA,
     Language.HASKELL,
 ]
+
 
 available_languages = []
 for tag in Language:
@@ -130,11 +131,10 @@ async def GenerateResponse(request):
     if request.method == 'POST':
         question = request.POST.get('question')
         texts = cust_session['texts']
-        CodeReqText = await sync_to_async(CodeAnalysisRequest.objects.get)(pk=1)
+        # CodeReqText = await sync_to_async(CodeAnalysisRequest.objects.get)(pk=1)
         start_time = time.time()
-        db_texts = str(CodeReqText.texts)
-        print(f"db_texts{db_texts}")
-        retriever = await loadAndRetrieveEmbeddings(db_texts)
+        # db_texts = str(CodeReqText.texts)
+        retriever = await loadAndRetrieveEmbeddings(texts)
         end_time = time.time()
         retriever_time_taken = end_time - start_time
         print(f"Time taken to create retriever: {retriever_time_taken:.2f} seconds")
@@ -147,7 +147,7 @@ async def GenerateResponse(request):
         print(f"Time taken to generate response: {result_time_taken:.2f} seconds")
         chat_history.append(HumanMessage(content=question))
         chat_history.append(AIMessage(content=result["answer"]))
-        CodeAnalysisRequest.objects.filter(pk=1).update(chat_history=chat_history)
+        # CodeAnalysisRequest.objects.filter(pk=1).update(chat_history=chat_history)
         start_time = time.time()
         formated_result = await format_response(result['answer'])
         end_time = time.time()

@@ -65,6 +65,7 @@ CACHES = {
     }
 }
 
+# SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 ROOT_URLCONF = 'codepilot.urls'
 
