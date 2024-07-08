@@ -1,0 +1,17 @@
+langchain-google-genai==1.0.3
+langchain-chroma==0.1.0
+langchain==0.1.17
+GitPython==3.1.43
+tiktoken==0.6.0
+python-dotenv==1.0.1
+validators==0.28.1
+django==5.0
+djangorestframework==3.15.1
+markdown==3.6
+django-filter==24.2
+tree-sitter==0.22.3
+tree-sitter-languages==1.10.2
+esprima==4.0.1
+django-tailwind==3.8.0
+# ipython==8.25.0
+pygments==2.18.0

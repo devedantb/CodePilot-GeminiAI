@@ -1,0 +1,247 @@
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=2.0">
+    {% tailwind_css %}
+    <title>Document</title>
+    <style>
+        .chat-container {
+            position: fixed; /* Fixed position */
+            bottom: 0; /* Align to the bottom */
+            width: inherit;
+            /* padding-right: 0px; */
+        }
+        .loader-container {
+            position: fixed;
+            top: 50%;
+            left: 63%;
+            transform: translate(-50%, -50%);
+            z-index: 1000; /* Ensure loader appears above other content */
+            display: none; /* Initially hidden */
+        }
+
+        .loader {
+            border: 10px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #3498db;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            animation: spin 1s linear infinite;
+            margin: auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .resizer {
+            background: #000;
+            opacity: 0.5;
+            z-index: 1;
+            transition: all 0.2s ease;
+        }
+        .resizer:hover {
+            opacity: 1;
+        }
+        .resizer.vertical {
+            width: 5px;
+            cursor: ew-resize;
+        }
+        .resizer.horizontal {
+            height: 8px;
+            cursor: ns-resize;
+        }
+        .copy-button {
+            margin-top: 5px;
+            padding: 5px;
+            padding-right:  10px;
+            padding-left: 90%;
+            padding-right: 7%;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+            /* Custom scrollbar styles */
+        .scrollable::-webkit-scrollbar {
+            height: 12px; /* Adjust height as needed */
+            width: 12px; /* Ensure width for horizontal scrollbar */
+        }
+
+        .scrollable::-webkit-scrollbar-track {
+            background: #2d3748; /* Tailwind bg-gray-800 */
+        }
+
+        .scrollable::-webkit-scrollbar-thumb {
+            background-color: #718096; /* Tailwind bg-gray-600 */
+            border-radius: 6px;
+            border: 3px solid #2d3748; /* Match the track color */
+        }
+
+        /* For horizontal scrollbars */
+        .scrollable::-webkit-scrollbar-track-piece:end {
+            background-color: #2d3748; /* Tailwind bg-gray-800 */
+        }
+
+        .scrollable::-webkit-scrollbar-thumb:horizontal {
+            background-color: #718096; /* Tailwind bg-gray-600 */
+        }
+        #answer-padding{
+            padding-bottom: 3rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+    </style>
+    <script>
+        function validateForm() {
+            var checkboxes = document.querySelectorAll('input[type="checkbox"][name="languages"]');
+            var checked = false;
+            checkboxes.forEach(function(checkbox) {
+                if (checkbox.checked) {
+                    checked = true;
+                }
+            });
+            if (!checked) {
+                alert("Please select at least one language.");
+                return false; // Prevent form submission
+            }
+            return true; // Allow form submission
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const splitter = document.getElementById('splitter');
+            const leftPane = document.getElementById('left-pane');
+            const rightPane = document.getElementById('right-pane');
+
+            let isResizing = false;
+            let initialMouseX;
+
+            splitter.addEventListener('mousedown', function(e) {
+                isResizing = true;
+                initialMouseX = e.clientX;
+                document.body.style.cursor = 'ew-resize';
+            });
+
+            document.addEventListener('mousemove', function(e) {
+                if (!isResizing) return;
+                const dx = e.clientX - initialMouseX;
+                const newLeftPaneWidth = leftPane.offsetWidth + dx;
+                const newRightPaneWidth = rightPane.offsetWidth - dx;
+                leftPane.style.width = `${newLeftPaneWidth}px`;
+                rightPane.style.width = `${newRightPaneWidth}px`;
+                initialMouseX = e.clientX;
+            });
+
+            document.addEventListener('mouseup', function() {
+                isResizing = false;
+                document.body.style.cursor = 'default';
+            });
+        });
+
+        function showLoading() {
+            var loaderContainer = document.getElementById('loader-container');
+            loaderContainer.style.display = 'block'; // Show loader container
+
+            // Simulate loading delay (2 seconds) - replace with actual logic
+            setTimeout(function() {
+                // Normally, you would perform an asynchronous action (e.g., AJAX request) here
+
+                // Simulate success after loading
+                hideLoading(); // This function should be called after receiving a response from your backend
+            }, 50000); // Adjust delay time as per your requirements
+        }
+
+        function hideLoading() {
+            var loaderContainer = document.getElementById('loader-container');
+            loaderContainer.style.display = 'none'; // Hide loader container
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.copy-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const textareaId = this.getAttribute('data-code-block');
+                    const textarea = document.getElementById(textareaId);
+                    textarea.select();
+                    document.execCommand('copy');
+                    
+                    // Show the copied message next to the button
+                    const copiedMessage = this.querySelector('.copied-message');
+                    copiedMessage.classList.remove('hidden');
+
+                    // Hide the copied message after 2 seconds
+                    setTimeout(() => {
+                        copiedMessage.classList.add('hidden');
+                    }, 2000);
+                });
+            });
+        });
+
+
+    </script>
+</head>
+<body class="scrollable bg-gray-900 text-white min-h-screen flex flex-col">
+    <div class="scrollable flex-grow flex flex-row overflow-hidden">
+        <div id="left-pane" class="scrollable bg-gray-1000 p-2 rounded-lg flex-grow flex-shrink sm:w-1/4 h-full overflow-auto">
+            <form action="{% url 'getrepo' %}" method="post" class="scrollable form-get-repo flex flex-col gap-4 bg-gray-800 p-6 rounded-lg shadow-md h-full" onsubmit="return validateForm()">
+                {% csrf_token %}
+                <h2 class="content-center text-white text-xl font-semibold">Import Git Repo</h2>
+                <label for="giturl" class="text-gray-300 font-semibold">Repo URL</label>
+                <input type="url" name="giturl" required class="p-2 bg-gray-900 border border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://github.com/my-org/my-repo">
+                
+                <label for="languages" class="text-gray-300 font-semibold">Select Languages</label>
+                <div class="scrollable grid grid-cols-2 sm:grid-cols-2 gap-6 p-1 border border-gray-600 rounded overflow-auto">
+                    {% for language in languages %}
+                        <div class="scrollable flex items-center p-1 rounded hover:opacity-75 transition duration-200">
+                            <input type="checkbox" name="languages" value="{{language.value}}" class="mr-4 h-4 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                            <label class="text-gray-300">{{language.value}}</label>
+                        </div>
+                    {% endfor %}
+                </div>
+                <input type="submit" value="Submit" class="text-white p-2 rounded cursor-pointer focus:ring-blue-50 hover:bg-green-800 transition duration-300 border border-gray-0 rounded">
+            </form>
+        </div>
+        
+        <div id="splitter" class="resizer vertical"></div>
+        <div id="right-pane" class="scrollable bg-gray-900 p-2 rounded-lg flex-grow sm:w-3/4 flex flex-col mt-4 sm:mt-0 resize overflow-auto">
+            <div class="scrollable flex-grow overflow-auto p-2 bg-gray-800 rounded-lg mb-4">
+                {% if question %}
+                    <div class="scrollable bg-gray-700 p-3 rounded-lg mb-2">
+                        <div class="text-gray-300">{{question}}</div>
+                    </div>
+                    <div id="answer-padding" class="scrollable relative my-4 p-4 bg-gray-800 rounded-lg overflow-auto">
+                        {{answer|safe}}
+                    </div>
+                {% else %}
+                    <div class="bg-gray-700 p-3 rounded-lg mb-2">
+                        <div class="text-gray-300">User: How does this work?</div>
+                    </div>
+                    <div class="bg-gray-900 p-3 rounded-lg">
+                        <div class="text-white">AI: You can ask me any question, and I'll provide the best possible answer.</div>
+                    </div>
+                {% endif %}
+            </div>
+            <!-- <div id="right-pane" action="{% url 'chat' %}" method="post" class="scrollable bg-gray-900 p-2 rounded-lg flex-grow sm:w-3/4 flex flex-col mt-4 sm:mt-0 resize overflow-auto" onsubmit="return showLoading();"> -->
+            <form action="{% url 'chat' %}" method="post" class="chat-container flex-grow bg-gray-900 p-1 h-5 flex-grow" onsubmit="return showLoading();">
+                {% csrf_token %}
+                <div class="flex items-center p-3">
+                    {% if canchat %}
+                        <textarea id="repoInput" type="text" class="flex-grow p-2 mr-2 h-50 bg-gray-900 border rounded focus:outline-none focus:ring-2 focus:ring-blue-100" placeholder="Type your question here" spellcheck="true" rows="1" name="question" required></textarea>
+                        <button id="chatButton" class="bg-green-800 text-white w-30 p-2 mr-2 py-2 h-50 rounded-r hover:bg-green-700 transition duration-300">Ask</button>
+                    {% else %}
+                        <textarea id="repoInput" type="text" class="flex-grow p-2 mr-2 h-50 bg-gray-900 border rounded focus:outline-none focus:ring-2 focus:ring-blue-100" placeholder="You can type here after providing the repo and specifying the languages" name="question" spellcheck="true" rows="1" required disabled></textarea>
+                        <button id="chatButton" class="bg-green-800 text-white w-30 p-2 mr-2 py-2 h-50 rounded-r hover:bg-green-700 transition duration-300" disabled>Ask</button>
+                    {% endif %}
+                    <div id="loader-container" class="loader-container">
+                        <div class="loader"></div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,9 @@
+.venv
+migrations
+__pycache__
+.idx
+.env
+node_modules/
+devserver.sh
+README.md
+db.sqlite3

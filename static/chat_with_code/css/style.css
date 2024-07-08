@@ -1,0 +1,181 @@
+.chat-container {
+    position: fixed; /* Fixed position */
+    bottom: 0; /* Align; to the bottom */
+    border-radius: 18pt !important;
+    width:auto;
+    right: 8.2px;
+    left: 8.2px;
+    margin: auto;
+    background-color: rgb(31 41 55 / var(--tw-bg-opacity));
+}
+.loader-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000; /* Ensure loader appears above other content */
+    display: none; /* Initially hidden */
+}
+
+.loader {
+    border: 10px solid rgba(0, 0, 0, 0.1);
+    border-left-color: #3498db;
+    border-radius: 75%;
+    width: 80px;
+    height: 80px;
+    animation: spin 2s linear infinite;
+    margin: auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.resizer {
+    background: #000;
+    opacity: 0.5;
+    z-index: 1;
+    transition: all 0.2s ease;
+}
+.resizer:hover {
+    opacity: 1;
+}
+.resizer.vertical {
+    width: 5px;
+    cursor: ew-resize;
+}
+.resizer.horizontal {
+    height: 8px;
+    cursor: ns-resize;
+}
+.copy-button {
+    margin-top: 5px;
+    padding: 5px;
+    padding-right:  10px;
+    padding-left: 90%;
+    padding-right: 7%;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* Custom scrollbar styles */
+.scrollable::-webkit-scrollbar {
+    height: 12px; /* Adjust height as needed */
+    width: 12px; /* Ensure width for horizontal scrollbar */
+}
+
+.scrollable::-webkit-scrollbar-track {
+    background: #2d3748; /* Tailwind bg-gray-800 */
+}
+
+.scrollable::-webkit-scrollbar-thumb {
+    background-color: #718096; /* Tailwind bg-gray-600 */
+    border-radius: 6px;
+    border: 3px solid #2d3748; /* Match the track color */
+}
+
+/* For horizontal scrollbars */
+.scrollable::-webkit-scrollbar-track-piece:end {
+    background-color: #2d3748; /* Tailwind bg-gray-800 */
+}
+
+.scrollable::-webkit-scrollbar-thumb:horizontal {
+    background-color: #718096; /* Tailwind bg-gray-600 */
+}
+#answer-padding{
+    padding-bottom: 3rem;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Drawer styles */
+.drawer {
+    position: fixed;
+    top: 0;
+    left: -350px; /* Initially hidden */
+    width: 350px;
+    height: 100%;
+    background-color: #1a202c; /* Tailwind bg-gray-900 equivalent */
+    color: white;
+    overflow-y: auto;
+    transition: left 0.3s ease;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.drawer.open {
+    left: 0;
+}
+
+.drawer h2 {
+    color: white;
+}
+
+.drawer input[type="url"],
+.drawer input[type="submit"] {
+    width: 100%;
+    border-radius: 25%;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    /* background-color:  !important; */
+}
+
+.drawer input[type="url"] {
+    background-color: #2d3748; /* Tailwind bg-gray-800 */
+    color: rgb(252, 252, 252);
+}
+
+.drawer input[type="submit"] {
+    /* background-color: #012410;  */
+    /* color: white;
+    cursor: pointer; */
+    border: #718096;
+}
+
+.drawer input[type="submit"]:hover {
+    background-color: rgb(0, 90, 0);
+}
+
+.drawer .language-options {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.drawer .language-options div {
+    width: 50%;
+    margin-bottom: 10px;
+}
+
+.drawer .language-options input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+/* Overlay styles */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    z-index: 999;
+}
+
+.overlay.show {
+    display: block;
+}
+
+#drawer-button,#chatButton,#repoInput{
+    border-radius: 100% !important;
+}
+
+#repoInput{
+    border-radius: 6pc !important;
+    border:none !important;
+}
