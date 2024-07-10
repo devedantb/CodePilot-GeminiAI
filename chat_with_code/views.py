@@ -4,6 +4,7 @@ import shutil
 import asyncio
 import random
 import dotenv
+import json
 from typing import List, Dict
 from django.shortcuts import render, HttpResponse,redirect
 from django.views.decorators.csrf import csrf_protect
@@ -74,19 +75,17 @@ async def get_suffixes_languages(languages:List)->tuple:
 
 @csrf_protect
 async def GetRepoData(request):
+    await sync_to_async(request.session.__setitem__)('session_key', random.randbytes(16).hex())
+    print(await sync_to_async(request.session.__getitem__)('session_key'))
     if request.method == 'POST':
         languages:str = request.POST.getlist('languages')
         github_url:str = request.POST.get('giturl')
         cust_session['languages'] = languages
         cust_session['github_url'] = github_url
         cust_session['available_languages'] = available_languages
-        # try:
-        #     root_folder =  cust_session[github_url]
-        # except:
-        #     root_folder = random.randbytes(16).hex()
-        #     root_folder = os.path.join('repo_path',root_folder)
-        #     cust_session[github_url] = root_folder
-        #     await clone_repo(github_url=github_url,local_repo_path=root_folder)
+        await sync_to_async(request.session.__setitem__)('languages', languages)
+        await sync_to_async(request.session.__setitem__)('github_url', github_url)
+        await sync_to_async(request.session.__setitem__)('available_languages', available_languages)
         root_folder = random.randbytes(16).hex()
         root_folder = os.path.join('repo_path',root_folder)
         try:
@@ -103,16 +102,19 @@ async def GetRepoData(request):
             document = await load_documents_from_repo(languages=languages_to_show,suffixes=suffixes,local_repo_path=root_folder)
             texts = await split_code_into_chunks(documents=document, languages=languages_to_show)
             istexts = 'No'
+            print(type(texts))
             if len(texts) > 0:
                 istexts = 'Yes'
-                await sync_to_async(CodeAnalysisRequest.objects.create)(github_url=github_url,language=languages,texts=texts,chat_history=chat_history)
+                # await sync_to_async(CodeAnalysisRequest.objects.create)(github_url=github_url,language=languages,texts=texts,chat_history=chat_history)
     
             print(istexts)
             end_time = time.time()
             time_taken = end_time - start_time
             print(f"Time taken to create embeddings: {time_taken:.2f} seconds")
             cust_session['texts'] = texts
-            context = {'languages':cust_session["available_languages"],'canchat':True}
+            serialized_texts = json.dumps(texts)
+            await sync_to_async(set_session_value)(request.session, 'texts', serialized_texts)
+            context = {'languages':available_languages,'canchat':True}
             return render(request,"chat_with_code/test.html",context=context)
         except Exception as e:
             print(f"The language {languages} is not allowed, {e}")
@@ -130,7 +132,8 @@ async def GetRepoData(request):
 async def GenerateResponse(request):
     if request.method == 'POST':
         question = request.POST.get('question')
-        texts = cust_session['texts']
+        # texts = cust_session['texts']
+        texts = await sync_to_async(get_session_value)(request.session, 'texts', '[]')
         # CodeReqText = await sync_to_async(CodeAnalysisRequest.objects.get)(pk=1)
         start_time = time.time()
         # db_texts = str(CodeReqText.texts)
