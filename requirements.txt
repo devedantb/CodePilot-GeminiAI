@@ -16,3 +16,4 @@ django-tailwind==3.8.0
 # ipython==8.25.0
 pygments==2.18.0
 django-browser-reload==1.13.0
+pysqlite3-binary==0.5.3
