@@ -148,6 +148,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 if DEBUG:
     CSRF_TRUSTED_ORIGINS = [
-    'https://8000-idx-codepilot-1716630059365.cluster-a3grjzek65cxex762e4mwrzl46.cloudworkstations.dev',
+        'http://localhost:8000',
+        'http://127.0.0.1:8000',
+        'https://8000-idx-codepilot-1716630059365.cluster-a3grjzek65cxex762e4mwrzl46.cloudworkstations.dev'
     # Add other trusted origins if necessary
 ]

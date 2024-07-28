@@ -26,9 +26,10 @@ dotenv.load_dotenv()
 # gemini-1.5-pro-latest
 google_api_key = os.getenv("google_api_key")
 llm = GoogleGenerativeAI(
-    google_api_key=google_api_key, model="gemini-1.5-flash-latest", temperature=0.5
+    google_api_key=google_api_key, model="gemini-1.5-pro-latest", temperature=0.5
 )
 
+################ Start Helper functionalities #######################
 supported_languages = [
     Language.CPP,
     Language.GO,
@@ -65,13 +66,12 @@ cust_session["available_languages"] = available_languages
 chat_history:List=[]
 question_number:int=0
 
-################ Start Helper Functions #######################
 async def get_suffixes_languages(languages:List)->tuple:
     languages_to_show = [get_language_info(language)[0] for language in languages]
     suffixes = [get_language_info(language)[1] for language in languages]
     return (languages_to_show,suffixes)
 
-################ End Helper Functions #######################
+################ End Helper functionalities #######################
 
 @csrf_protect
 async def GetRepoData(request):
@@ -83,9 +83,6 @@ async def GetRepoData(request):
         cust_session['languages'] = languages
         cust_session['github_url'] = github_url
         cust_session['available_languages'] = available_languages
-        await sync_to_async(request.session.__setitem__)('languages', languages)
-        await sync_to_async(request.session.__setitem__)('github_url', github_url)
-        await sync_to_async(request.session.__setitem__)('available_languages', available_languages)
         root_folder = random.randbytes(16).hex()
         root_folder = os.path.join('repo_path',root_folder)
         try:
@@ -105,17 +102,14 @@ async def GetRepoData(request):
             print(type(texts))
             if len(texts) > 0:
                 istexts = 'Yes'
-                # await sync_to_async(CodeAnalysisRequest.objects.create)(github_url=github_url,language=languages,texts=texts,chat_history=chat_history)
-    
+            
             print(istexts)
             end_time = time.time()
             time_taken = end_time - start_time
             print(f"Time taken to create embeddings: {time_taken:.2f} seconds")
             cust_session['texts'] = texts
-            serialized_texts = json.dumps(texts)
-            await sync_to_async(set_session_value)(request.session, 'texts', serialized_texts)
             context = {'languages':available_languages,'canchat':True}
-            return render(request,"chat_with_code/test.html",context=context)
+            return render(request,"chat_with_code/chat.html",context=context)
         except Exception as e:
             print(f"The language {languages} is not allowed, {e}")
         finally:
@@ -124,7 +118,7 @@ async def GetRepoData(request):
                 shutil.rmtree(root_folder)
                 # print(f"Deleted folder: {root_folder}")
     context = {'languages':cust_session["available_languages"]}
-    return render(request,"chat_with_code/test.html",context=context)
+    return render(request,"chat_with_code/chat.html",context=context)
 
 
 
@@ -132,11 +126,8 @@ async def GetRepoData(request):
 async def GenerateResponse(request):
     if request.method == 'POST':
         question = request.POST.get('question')
-        # texts = cust_session['texts']
-        texts = await sync_to_async(get_session_value)(request.session, 'texts', '[]')
-        # CodeReqText = await sync_to_async(CodeAnalysisRequest.objects.get)(pk=1)
+        texts = cust_session['texts']
         start_time = time.time()
-        # db_texts = str(CodeReqText.texts)
         retriever = await loadAndRetrieveEmbeddings(texts)
         end_time = time.time()
         retriever_time_taken = end_time - start_time
@@ -150,13 +141,12 @@ async def GenerateResponse(request):
         print(f"Time taken to generate response: {result_time_taken:.2f} seconds")
         chat_history.append(HumanMessage(content=question))
         chat_history.append(AIMessage(content=result["answer"]))
-        # CodeAnalysisRequest.objects.filter(pk=1).update(chat_history=chat_history)
         start_time = time.time()
         formated_result = await format_response(result['answer'])
         end_time = time.time()
         formated_time_taken = end_time - start_time
         print(f"Time taken to format response: {formated_time_taken:.2f} seconds")
         context = {'languages':available_languages,'question':question, 'answer':formated_result,'canchat':True}
-        return render(request,"chat_with_code/test.html",context=context)
+        return render(request,"chat_with_code/chat.html",context=context)
     context = {'languages':cust_session["available_languages"],'canchat':False}
-    return render(request,"chat_with_code/test.html",context=context)
+    return render(request,"chat_with_code/chat.html",context=context)
