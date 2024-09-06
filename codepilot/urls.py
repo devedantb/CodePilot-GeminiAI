@@ -19,6 +19,7 @@ from django.urls import path,include
 
 urlpatterns = [
     path('codepilot/', include('chat_with_code.urls')),
+    path('', include('chat_with_code.urls')),
     path('admin/', admin.site.urls),
     path("__reload__/", include("django_browser_reload.urls")),
 ]

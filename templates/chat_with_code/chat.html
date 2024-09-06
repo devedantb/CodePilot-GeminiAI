@@ -41,13 +41,14 @@
                         <div class="text-gray-300">{{question}}</div>
                     </div>
                     <div id="answer-padding" class="scrollable relative my-4 p-2 bg-gray-800 rounded overflow-auto">
+                        <!-- <img src="{% static 'chat_with_code/images/icon.svg' %}" alt="" class="w-2 h-2"> -->
                         {{answer|safe}}
                     </div>
                 {% else %}
                     {% if canchat %}
                     <div class="bg-gray-700 p-2 rounded-lg mb-2">
-                        <div class="text-gray-300">
-                            Repository Imported Successfully!
+                        <div class="text-gray-300 text-center">
+                            🎉Repository Imported Successfully!🎉
                         </div>
                     </div>
                     <div class="bg-gray-900 p-2 rounded-lg">
@@ -58,8 +59,8 @@
                     </div>
                     {% else %}
                         <div class="bg-gray-700 p-2 rounded-lg mb-2">
-                            <div class="text-gray-300">
-                                Welcome to the Codepilot
+                            <div class="text-gray-300 text-center">
+                                👋 Welcome to the Codepilot!
                             </div>
                         </div>
                         <div class="bg-gray-900 p-2 rounded-lg">

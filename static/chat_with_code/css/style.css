@@ -1,3 +1,6 @@
+.text-center {
+    text-align: center;
+}
 .chat-container {
     position: fixed; /* Fixed position */
     bottom: 0; /* Align; to the bottom */
